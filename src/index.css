@@ -1,0 +1,41 @@
+body {
+  margin: 0;
+  font-family: sans-serif;
+  color: #eee;
+  background-color: black;
+
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.metaball-picture {
+  position: relative;
+  margin: 16px auto;
+}
+
+.metaball-picture * {
+  position: absolute;
+}
+.metaball-picture svg {
+  pointer-events: none;
+}
+.metaball-picture canvas,
+.metaball-picture img {
+  opacity: 0;
+}
+
+.metaball-picture.is-debug canvas {
+  opacity: 0.4;
+}
+
+.image-effects {
+
+}
+
+.image-effects input {
+  width: 320px;
+  margin: 16px auto;
+  display: block;
+}
