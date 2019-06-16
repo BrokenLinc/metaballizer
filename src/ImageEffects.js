@@ -4,25 +4,29 @@ import {compose, withState, withHandlers} from 'recompose';
 // import abeImage from './abe.jpg';
 import jimmyImage from './jimmy.jpg';
 
+import ImageUploadTest from './ImageUploadTest';
 import MetaballPicture from './MetaballPicture';
 
 const ImageEffects = compose(
-  withState('circleRadius', 'setCircleRadius', 2),
+  withState('imageSrc', 'setImageSrc', jimmyImage),
+  withState('dotCount', 'setDotCount', 100),
   withHandlers({
-    handleCircleRadiusChange: ({setCircleRadius}) => (event) => {
-      setCircleRadius(parseInt(event.target.value));
+    handleDotCountChange: ({setDotCount}) => (event) => {
+      setDotCount(parseInt(event.target.value));
     },
   }),
-)(({circleRadius, handleCircleRadiusChange}) => (
+)(({dotCount, handleDotCountChange, imageSrc, setImageSrc}) => (
   <div className="image-effects">
-    <MetaballPicture imageSrc={jimmyImage} circleRadius={circleRadius}/>
-    {/*<input*/}
-    {/*  type="range"*/}
-    {/*  min={2}*/}
-    {/*  max={50}*/}
-    {/*  value={circleRadius}*/}
-    {/*  onChange={handleCircleRadiusChange}*/}
-    {/*/>*/}
+    <input
+      type="range"
+      min={10}
+      max={160}
+      step={10}
+      value={dotCount}
+      onChange={handleDotCountChange}
+    />
+    <ImageUploadTest onFileChange={setImageSrc}/>
+    <MetaballPicture imageSrc={imageSrc} dotCount={dotCount}/>
   </div>
 ));
 

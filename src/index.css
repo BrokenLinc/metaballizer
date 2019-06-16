@@ -11,23 +11,26 @@ body {
 }
 
 .metaball-picture {
-  position: relative;
-  margin: 16px auto;
+  /*position: relative;*/
+  /*margin: 16px auto;*/
 }
 
 .metaball-picture * {
-  position: absolute;
+  /*position: absolute;*/
 }
 .metaball-picture svg {
-  pointer-events: none;
+  /*pointer-events: none;*/
+}
+.metaball-picture img {
+  /*width: 100%;*/
 }
 .metaball-picture canvas,
 .metaball-picture img {
-  opacity: 0;
+  /*opacity: 0;*/
 }
-
-.metaball-picture.is-debug canvas {
-  opacity: 0.4;
+.metaball-picture.is-debug * {
+  /*position: relative;*/
+  /*opacity: 1;*/
 }
 
 .image-effects {
@@ -38,4 +41,16 @@ body {
   width: 320px;
   margin: 16px auto;
   display: block;
+}
+
+.fill {
+  width: 100%;
+}
+img {
+  max-width: 100%;
+  display: block;
+}
+
+.pixelated {
+  image-rendering: pixelated;
 }

@@ -9,6 +9,13 @@ import {
   withStateHandlers
 } from 'recompose';
 import {each, map} from 'lodash';
+import {renderToString} from 'react-dom/server';
+
+const COLOR = {
+  BLUE: '#007AFF',
+  PURPLE: '#D000D6',
+  RED: '#F07',
+};
 
 // config
 
@@ -41,160 +48,232 @@ const getPixel = (context, {x, y}) => {
   return context.getImageData(x, y, 1, 1).data;
 };
 
-function getCursorPosition(element, event) {
-  const rect = element.getBoundingClientRect();
-  const x = event.clientX - rect.left;
-  const y = event.clientY - rect.top;
-  return {x, y};
-}
+const getRGB = (context, {x, y}) => {
+  const pixel = getPixel(context, {x, y});
+
+  const red = pixel[0];
+  const green = pixel[1];
+  const blue = pixel[2];
+
+  return {red, green, blue};
+};
+
+// function getCursorPosition(element, event) {
+//   const rect = element.getBoundingClientRect();
+//   const x = event.clientX - rect.left;
+//   const y = event.clientY - rect.top;
+//   return {x, y};
+// }
+
+const getSVGImageSourceFromComponent = (component) => {
+  let metaballsSVGString = renderToString(component);
+  metaballsSVGString = metaballsSVGString.replace(/><\/[A-z]+>/g, '/>');
+  metaballsSVGString = metaballsSVGString.replace(/data-reactroot=""/g, '');
+  // console.log(metaballsSVGString);
+  metaballsSVGString = encodeURIComponent(metaballsSVGString);
+  return `data:image/svg+xml;charset=utf-8,${metaballsSVGString}`;
+};
 
 const MetaballPicture = compose(
   defaultProps({
-    circleRadius: 10,
+    blueThreshold: 0.53,
+    brightnessThreshold: 100,
+    canvasRef: React.createRef(),
+    connectorFrequency: 0.2,
+    dotCount: 100,
+    imageRef: React.createRef(),
+    redThreshold: 0.61,
   }),
   withState('canvasContext', 'setCanvasContext'),
-  withState('circles', 'setCircles', []),
+  withState('circles', 'setCircles'),
+  withState('SVGImageSource', 'setSVGImageSource'),
   withStateHandlers({}, {
-    setSize: () => (newState) => (newState),
+    setState: () => (newState) => (newState),
   }),
-  withPropsOnChange([], () => ({
-    canvasRef: React.createRef(),
-    imageRef: React.createRef(),
-  })),
   withHandlers({
-    drawShapes: ({canvasContext, circleRadius, setCircles, width: _width, height: _height}) => (params = {}) => {
+    drawShapes: (props) => (nextState) => {
+      // merge nextState with props, to get the most up-to-date info
+      const {
+        blueThreshold,
+        brightnessThreshold,
+        canvasContext,
+        connectorFrequency,
+        height,
+        redThreshold,
+        scale,
+        scaledHeight,
+        scaledWidth,
+        setCircles,
+        setSVGImageSource,
+        width,
+      } = {...props, ...nextState};
+
       const circles = [];
       const grid = [];
-      const width = _width || params.width;
-      const height = _height || params.height;
 
       let colorScaleMin = 0;
       let colorScaleMax = 0;
 
-      for (let x = 0; x <= width / circleRadius; x += 1) {
-        const cx = circleRadius * (2 * x + 1);
+      // sample pixels from canvas
+      // add 0.6 offset to center dots on pixel grid
+      for (let x = 0; x <= scaledWidth; x += 1) {
         grid[x] = [];
-        for (let y = 0; y <= height / circleRadius; y += 1) {
-          const cy = circleRadius * (2 * y + 1);
-          const pixel = getPixel(canvasContext, {x: cx, y: cy});
-          const red = pixel[0];
-          const green = pixel[1];
-          const blue = pixel[2];
-          const circle = {cx, cy, x, y};
-          if (red + green + blue > 300) {
+        for (let y = 0; y <= scaledHeight; y += 1) {
+          const circle = {cx: x + 0.5, cy: y + 0.5};
+          const {red, green, blue} = getRGB(canvasContext, {x, y});
+
+          // create dots for pixels that are bright enough
+          if ((red + green + blue) / 3 > brightnessThreshold) {
+            // find the colorScale, or how much more red or blue the pixel is
             const colorScale = red - blue;
             colorScaleMin = Math.min(colorScale, colorScaleMin);
             colorScaleMax = Math.max(colorScale, colorScaleMax);
             circle.colorScale = colorScale;
+
+            // add the circle to the flat list
             circles.push(circle);
           }
+          // add the circle to the grid lookup
           grid[x].push(circle);
         }
       }
 
+      // map colorScale to fill by comparing it to the min/max values and thresholds
       each(circles, (circle) => {
         const relativeColorScale = (circle.colorScale - colorScaleMin) / (colorScaleMax - colorScaleMin);
 
-        if (relativeColorScale < 0.53) {
-          circle.fill = '#007AFF';
-        } else if (relativeColorScale > 0.61) {
-          circle.fill = '#F07';
+        // TODO: store relativeColorScale and move the fill logic out to the render method
+        if (relativeColorScale < blueThreshold) {
+          circle.fill = COLOR.BLUE;
+        } else if (relativeColorScale > redThreshold) {
+          circle.fill = COLOR.RED;
         } else {
-          circle.fill = '#D000D6';
+          circle.fill = COLOR.PURPLE;
         }
       });
 
+      // run through grid and create connections between same-color dots
       for (let x = 0; x < grid.length - 1; x += 1) {
         for (let y = 0; y < grid[x].length - 1; y += 1) {
           const circle = grid[x][y];
           const circleRight = grid[x + 1][y];
           const circleDown = grid[x][y + 1];
-          if (circle.fill === circleRight.fill && Math.random() > 0.8) {
+          if (circle.fill === circleRight.fill && Math.random() < connectorFrequency) {
             circle.hasRightConnector = true;
           }
-          if (circle.fill === circleDown.fill && Math.random() > 0.8) {
+          if (circle.fill === circleDown.fill && Math.random() < connectorFrequency) {
             circle.hasDownConnector = true;
           }
         }
       }
 
-      setCircles(circles);
-    },
-    drawMosaic: ({canvasContext, circleRadius, setCircles, width: _width, height: _height}) => (params = {}) => {
-      const circles = [];
-      const width = _width || params.width;
-      const height = _height || params.height;
-
-      for (let x = circleRadius; x <= width - circleRadius; x += circleRadius * 2) {
-        for (let y = circleRadius; y <= height - circleRadius; y += circleRadius * 2) {
-          const pixel = getPixel(canvasContext, {x, y});
-          const fill = `rgba(${pixel.join()})`;
-          circles.push({cx: x, cy: y, fill});
-        }
-      }
+      const metaballsProps = {width, height, circles, scale};
+      const SVGImageSource = getSVGImageSourceFromComponent(<MetaballsSVG {...metaballsProps} />);
 
       setCircles(circles);
+      setSVGImageSource(SVGImageSource);
     },
-  }),
-  withPropsOnChange(['circleRadius'], ({drawShapes}) => {
-    drawShapes();
   }),
   withHandlers({
-    handleCanvasClick: ({canvasContext, canvasRef}) => (event) => {
-      console.log(getPixel(canvasContext, getCursorPosition(canvasRef.current, event)));
-    },
-    handleImageLoad: ({canvasContext, canvasRef, drawShapes, imageRef, setSize}) => () => {
-      const {width, height} = imageRef.current.getBoundingClientRect();
+    handleFacetChange: (props) => () => {
+      const {canvasContext, canvasRef, dotCount, drawShapes, imageRef, setState} = props;
 
-      canvasRef.current.width = width;
-      canvasRef.current.height = height;
-      canvasContext.drawImage(imageRef.current, 0, 0);
+      // if there is an image, update the canvas dimensions
+      if (imageRef.current) {
+        const {width, height} = imageRef.current.getBoundingClientRect();
 
-      setSize({width, height});
-      drawShapes({width, height});
+        const scale = dotCount / width;
+        const scaledWidth = width * scale;
+        const scaledHeight = height * scale;
+
+        // The canvas should have one pixel per metaball
+        canvasRef.current.width = scaledWidth;
+        canvasRef.current.height = Math.floor(scaledHeight);
+        canvasContext.drawImage(imageRef.current, 0, 0, scaledWidth, scaledHeight);
+
+        // set nextState and pass to drawShapes since setState is async
+        const nextState = {scale, scaledWidth, scaledHeight, width, height};
+        setState(nextState);
+        drawShapes(nextState);
+      }
     },
   }),
+  // update artwork when input props change
+  withPropsOnChange(
+    ['blueThreshold', 'dotCount', 'redThreshold'],
+    ({handleFacetChange}) => {
+      handleFacetChange();
+    },
+  ),
   lifecycle({
     componentDidMount() {
+      // store canvas context upon render
       const {canvasRef, setCanvasContext} = this.props;
-
       const context = canvasRef.current.getContext('2d');
-
       setCanvasContext(context);
     },
   }),
-)(({canvasRef, circleRadius, circles, handleCanvasClick, handleImageLoad, height, imageRef, imageSrc, width}) => (
-  <div className="metaball-picture is-debug" style={{width, height}}>
-    <img ref={imageRef} src={imageSrc} alt="source" onLoad={handleImageLoad}/>
-    <canvas ref={canvasRef} onClick={handleCanvasClick}/>
-    <svg width={width} height={height}>
-      {map(circles, ({cx, cy, fill, hasDownConnector, hasRightConnector}, i) => (
+)(({canvasRef, handleFacetChange, imageRef, imageSrc, SVGImageSource}) => (
+  <div className="metaball-picture">
+    <img ref={imageRef} src={imageSrc} alt="source" onLoad={handleFacetChange} className="fill"/>
+    <canvas ref={canvasRef} className="fill pixelated"/>
+    <img src={SVGImageSource} alt="SVG output"/>
+  </div>
+));
+
+const MetaballsSVG = ({width, height, circles, scale}) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={`${width}px`}
+    height={`${height}px`}
+  >
+    {map(circles, ({cx, cy, fill, hasDownConnector, hasRightConnector}, i) => {
+      const shapeProps = {cx, cy, fill, scale};
+
+      return (
         <React.Fragment key={i}>
-          <circle cx={cx} cy={cy} fill={fill} r={circleRadius / 1.44}/>
+          <Dot {...shapeProps} />
 
           {hasDownConnector && (
-            <path
-              d="M0,0c27.61,27.61 72.39,27.61 100,0c-27.61,27.61 -27.61,72.39 0,100c-27.61,-27.61 -72.39,-27.61 -100,0c27.61,-27.61 27.61,-72.39 0,-100z"
-              fill={fill}
-              style={{
-                transform: `translate(${cx - circleRadius / 2}px, ${cy + circleRadius / 2}px) scale(${circleRadius / 100})`,
-              }}
-            />
+            <DotConnector {...shapeProps} direction="down"/>
           )}
 
           {hasRightConnector && (
-            <path
-              d="M0,0c27.61,27.61 72.39,27.61 100,0c-27.61,27.61 -27.61,72.39 0,100c-27.61,-27.61 -72.39,-27.61 -100,0c27.61,-27.61 27.61,-72.39 0,-100z"
-              fill={fill}
-              style={{
-                transform: `translate(${cx + circleRadius / 2}px, ${cy - circleRadius / 2}px) scale(${circleRadius / 100})`,
-              }}
-            />
+            <DotConnector {...shapeProps} direction="right"/>
           )}
         </React.Fragment>
-      ))}
-    </svg>
-  </div>
+      )
+    })}
+  </svg>
+);
+
+const Dot = ({cx, cy, scale, ...restProps}) => (
+  <circle cx={cx / scale} cy={cy / scale} r={0.5 / 1.44 / scale} {...restProps} />
+);
+
+const DotConnector = compose(
+  withPropsOnChange(['direction'], ({direction}) => {
+    if (direction === 'up') {
+      return {offsetX: -0.25, offsetY: -0.75};
+    }
+    if (direction === 'down') {
+      return {offsetX: -0.25, offsetY: 0.25};
+    }
+    if (direction === 'left') {
+      return {offsetX: -0.75, offsetY: -0.25};
+    }
+    if (direction === 'right') {
+      return {offsetX: 0.25, offsetY: -0.25};
+    }
+  }),
+)(({cx, cy, direction, offsetX, offsetY, scale, ...restProps}) => (
+  <path
+    d="M0,0c27.61,27.61 72.39,27.61 100,0c-27.61,27.61 -27.61,72.39 0,100c-27.61,-27.61 -72.39,-27.61 -100,0c27.61,-27.61 27.61,-72.39 0,-100z"
+    style={{
+      transform: `translate(${(cx + offsetX) / scale}px, ${(cy + offsetY) / scale}px) scale(${0.5 / 100 / scale})`,
+    }}
+    {...restProps}
+  />
 ));
 
 export default MetaballPicture;
