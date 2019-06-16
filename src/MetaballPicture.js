@@ -8,14 +8,12 @@ import {
   withState,
   withStateHandlers
 } from 'recompose';
-import {each, map} from 'lodash';
-import {renderToString} from 'react-dom/server';
+import {each} from 'lodash';
 
-const COLOR = {
-  BLUE: '#007AFF',
-  PURPLE: '#D000D6',
-  RED: '#F07',
-};
+import COLOR from './color';
+import getPixelRGB from './getPixelRGB';
+import getSVGImageSourceFromComponent from './getSVGImageSourceFromComponent';
+import MetaballsSVG from './MetaballsSVG';
 
 // config
 
@@ -44,37 +42,7 @@ const COLOR = {
 //   return pathData;
 // };
 
-const getPixel = (context, {x, y}) => {
-  return context.getImageData(x, y, 1, 1).data;
-};
-
-const getRGB = (context, {x, y}) => {
-  const pixel = getPixel(context, {x, y});
-
-  const red = pixel[0];
-  const green = pixel[1];
-  const blue = pixel[2];
-
-  return {red, green, blue};
-};
-
-// function getCursorPosition(element, event) {
-//   const rect = element.getBoundingClientRect();
-//   const x = event.clientX - rect.left;
-//   const y = event.clientY - rect.top;
-//   return {x, y};
-// }
-
-const getSVGImageSourceFromComponent = (component) => {
-  let metaballsSVGString = renderToString(component);
-  metaballsSVGString = metaballsSVGString.replace(/><\/[A-z]+>/g, '/>');
-  metaballsSVGString = metaballsSVGString.replace(/data-reactroot=""/g, '');
-  // console.log(metaballsSVGString);
-  metaballsSVGString = encodeURIComponent(metaballsSVGString);
-  return `data:image/svg+xml;charset=utf-8,${metaballsSVGString}`;
-};
-
-const MetaballPicture = compose(
+const enhance = compose(
   defaultProps({
     blueThreshold: 0.53,
     brightnessThreshold: 100,
@@ -120,7 +88,7 @@ const MetaballPicture = compose(
         grid[x] = [];
         for (let y = 0; y <= scaledHeight; y += 1) {
           const circle = {cx: x + 0.5, cy: y + 0.5};
-          const {red, green, blue} = getRGB(canvasContext, {x, y});
+          const {red, green, blue} = getPixelRGB(canvasContext, {x, y});
 
           // create dots for pixels that are bright enough
           if ((red + green + blue) / 3 > brightnessThreshold) {
@@ -213,67 +181,14 @@ const MetaballPicture = compose(
       setCanvasContext(context);
     },
   }),
-)(({canvasRef, handleFacetChange, imageRef, imageSrc, SVGImageSource}) => (
+);
+
+const MetaballPicture = ({canvasRef, handleFacetChange, imageRef, imageSrc, SVGImageSource}) => (
   <div className="metaball-picture">
     <img ref={imageRef} src={imageSrc} alt="source" onLoad={handleFacetChange} className="fill"/>
     <canvas ref={canvasRef} className="fill pixelated"/>
     <img src={SVGImageSource} alt="SVG output"/>
   </div>
-));
-
-const MetaballsSVG = ({width, height, circles, scale}) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width={`${width}px`}
-    height={`${height}px`}
-  >
-    {map(circles, ({cx, cy, fill, hasDownConnector, hasRightConnector}, i) => {
-      const shapeProps = {cx, cy, fill, scale};
-
-      return (
-        <React.Fragment key={i}>
-          <Dot {...shapeProps} />
-
-          {hasDownConnector && (
-            <DotConnector {...shapeProps} direction="down"/>
-          )}
-
-          {hasRightConnector && (
-            <DotConnector {...shapeProps} direction="right"/>
-          )}
-        </React.Fragment>
-      )
-    })}
-  </svg>
 );
 
-const Dot = ({cx, cy, scale, ...restProps}) => (
-  <circle cx={cx / scale} cy={cy / scale} r={0.5 / 1.44 / scale} {...restProps} />
-);
-
-const DotConnector = compose(
-  withPropsOnChange(['direction'], ({direction}) => {
-    if (direction === 'up') {
-      return {offsetX: -0.25, offsetY: -0.75};
-    }
-    if (direction === 'down') {
-      return {offsetX: -0.25, offsetY: 0.25};
-    }
-    if (direction === 'left') {
-      return {offsetX: -0.75, offsetY: -0.25};
-    }
-    if (direction === 'right') {
-      return {offsetX: 0.25, offsetY: -0.25};
-    }
-  }),
-)(({cx, cy, direction, offsetX, offsetY, scale, ...restProps}) => (
-  <path
-    d="M0,0c27.61,27.61 72.39,27.61 100,0c-27.61,27.61 -27.61,72.39 0,100c-27.61,-27.61 -72.39,-27.61 -100,0c27.61,-27.61 27.61,-72.39 0,-100z"
-    style={{
-      transform: `translate(${(cx + offsetX) / scale}px, ${(cy + offsetY) / scale}px) scale(${0.5 / 100 / scale})`,
-    }}
-    {...restProps}
-  />
-));
-
-export default MetaballPicture;
+export default enhance(MetaballPicture);

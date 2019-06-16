@@ -7,7 +7,7 @@ import jimmyImage from './jimmy.jpg';
 import ImageUploadTest from './ImageUploadTest';
 import MetaballPicture from './MetaballPicture';
 
-const ImageEffects = compose(
+const enhance = compose(
   withState('imageSrc', 'setImageSrc', jimmyImage),
   withState('dotCount', 'setDotCount', 100),
   withHandlers({
@@ -15,7 +15,9 @@ const ImageEffects = compose(
       setDotCount(parseInt(event.target.value));
     },
   }),
-)(({dotCount, handleDotCountChange, imageSrc, setImageSrc}) => (
+);
+
+const ImageEffects = ({dotCount, handleDotCountChange, imageSrc, setImageSrc}) => (
   <div className="image-effects">
     <input
       type="range"
@@ -28,6 +30,6 @@ const ImageEffects = compose(
     <ImageUploadTest onFileChange={setImageSrc}/>
     <MetaballPicture imageSrc={imageSrc} dotCount={dotCount}/>
   </div>
-));
+);
 
-export default ImageEffects;
+export default enhance(ImageEffects);
