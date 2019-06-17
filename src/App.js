@@ -1,6 +1,6 @@
 import React from 'react';
 
-import ImageEffects from './ImageEffects';
+import ImageEffects from './components/ImageEffects';
 
 const App = () => (
   <ImageEffects />

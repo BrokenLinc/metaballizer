@@ -2,7 +2,7 @@ import React from 'react';
 import {compose, withState, withHandlers} from 'recompose';
 
 // import abeImage from './abe.jpg';
-import jimmyImage from './jimmy.jpg';
+import jimmyImage from '../assets/jimmy.jpg';
 
 import ImageUploadTest from './ImageUploadTest';
 import MetaballPicture from './MetaballPicture';

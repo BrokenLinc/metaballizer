@@ -11,9 +11,9 @@ import {
 import {each} from 'lodash';
 import cn from 'classnames';
 
-import COLOR from './color';
-import getPixelRGB from './getPixelRGB';
-import getSVGImageSourceFromComponent from './getSVGImageSourceFromComponent';
+import COLOR from '../constants/color';
+import getPixelRGB from '../utilities/getPixelRGB';
+import getSVGImageSourceFromComponent from '../utilities/getSVGImageSourceFromComponent';
 import MetaballsSVG from './MetaballsSVG';
 
 // config
