@@ -9,6 +9,7 @@ import {
   withStateHandlers
 } from 'recompose';
 import {each} from 'lodash';
+import cn from 'classnames';
 
 import COLOR from './color';
 import getPixelRGB from './getPixelRGB';
@@ -168,7 +169,7 @@ const enhance = compose(
   }),
   // update artwork when input props change
   withPropsOnChange(
-    ['blueThreshold', 'dotCount', 'redThreshold'],
+    ['blueThreshold', 'brightnessThreshold', 'dotCount', 'redThreshold'],
     ({handleFacetChange}) => {
       handleFacetChange();
     },
@@ -183,12 +184,29 @@ const enhance = compose(
   }),
 );
 
-const MetaballPicture = ({canvasRef, handleFacetChange, imageRef, imageSrc, SVGImageSource}) => (
-  <div className="metaball-picture">
-    <img ref={imageRef} src={imageSrc} alt="source" onLoad={handleFacetChange} className="fill"/>
-    <canvas ref={canvasRef} className="fill pixelated"/>
-    <img src={SVGImageSource} alt="SVG output"/>
-  </div>
-);
+const MetaballPicture = (props) => {
+  const {
+    canvasRef,
+    handleFacetChange,
+    imageRef,
+    imageSrc,
+    isSourceLayerVisible,
+    isScaledLayerVisible,
+    isOutputLayerVisible,
+    SVGImageSource,
+  } = props;
+
+  return (
+    <div className="metaball-picture">
+      <img ref={imageRef} src={imageSrc} alt="source" onLoad={handleFacetChange} className="metaball-picture-loader" />
+
+      <div className="metaball-picture-layers">
+        <img src={imageSrc} alt="source" className={cn({ hidden: !isSourceLayerVisible })} />
+        <canvas ref={canvasRef} className={cn([{ hidden: !isScaledLayerVisible }, 'pixelated'])} />
+        <img src={SVGImageSource} alt="output" className={cn({ hidden: !isOutputLayerVisible })} />
+      </div>
+    </div>
+  );
+};
 
 export default enhance(MetaballPicture);

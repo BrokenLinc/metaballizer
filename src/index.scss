@@ -1,0 +1,95 @@
+* {
+  box-sizing: border-box;
+}
+html,
+body,
+#root,
+.image-effects,
+.metaball-picture {
+  width: 100%;
+  height: 100%;
+}
+body {
+  margin: 0;
+  font-family: sans-serif;
+  color: #999;
+  background-color: black;;
+}
+img {
+  max-width: 100%;
+  display: block;
+}
+label {
+  display: block;
+  font-size: 12px;
+  font-weight: bold;
+  margin-bottom: 12px;
+
+  + label {
+    font-weight: normal;
+  }
+}
+input[type=range] {
+  display: block;
+  width: 100%;
+}
+input[type=checkbox] {
+  margin-right: 8px;
+}
+
+.fill {
+  width: 100%;
+}
+.form-group {
+  margin-bottom: 24px;
+}
+.pixelated {
+  image-rendering: pixelated;
+}
+.hidden {
+  visibility: hidden;
+}
+.rtl {
+  direction: rtl;
+}
+
+.metaball-picture {
+  position: relative;
+  height: 100%;
+  width: 100%;
+}
+.metaball-picture-loader {
+  position: absolute;
+  opacity: 0;
+}
+.metaball-picture-layers {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+
+  > * {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    object-fit: contain;
+  }
+}
+.metaball-picture-loader {
+
+}
+.image-effects {
+}
+.image-effects-menu {
+  position: absolute;
+  width: 320px;
+  padding: 16px;
+  height: 100%;
+  top: 0;
+  right: 0;
+  background: #000000cc;
+  border-left: 1px solid currentColor;
+}
