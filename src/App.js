@@ -1,9 +1,9 @@
 import React from 'react';
 
-import ImageEffects from './components/ImageEffects';
+import MetaballEditor from './components/MetaballEditor';
 
 const App = () => (
-  <ImageEffects />
+  <MetaballEditor />
 );
 
 export default App;

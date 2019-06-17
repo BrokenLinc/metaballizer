@@ -4,7 +4,7 @@ import {map} from 'lodash';
 import Dot from './Dot';
 import DotConnector from './DotConnector';
 
-const MetaballsSVG = ({width, height, circles, scale}) => (
+const Metaballs = ({width, height, circles, scale}) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width={`${width}px`}
@@ -30,4 +30,4 @@ const MetaballsSVG = ({width, height, circles, scale}) => (
   </svg>
 );
 
-export default MetaballsSVG;
+export default Metaballs;

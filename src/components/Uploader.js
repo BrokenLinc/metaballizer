@@ -1,7 +1,7 @@
 import React from 'react';
 import { compose, defaultProps, withHandlers } from 'recompose';
 
-const ImageUploadTest = compose(
+const Uploader = compose(
   defaultProps({
     onFileChange: (fileUrl) => {
       console.warn('Warning: missing "onFileChange" prop on ImageUploadTest component.')
@@ -18,4 +18,4 @@ const ImageUploadTest = compose(
   <input type="file" accept="image/*" onChange={props.handleFileInputChange} />
 ));
 
-export default ImageUploadTest;
+export default Uploader;

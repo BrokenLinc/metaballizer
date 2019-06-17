@@ -14,7 +14,7 @@ import cn from 'classnames';
 import COLOR from '../constants/color';
 import getPixelRGB from '../utilities/getPixelRGB';
 import getSVGImageSourceFromComponent from '../utilities/getSVGImageSourceFromComponent';
-import MetaballsSVG from './MetaballsSVG';
+import Metaballs from './svg/Metaballs';
 
 // config
 
@@ -137,7 +137,7 @@ const enhance = compose(
       }
 
       const metaballsProps = {width, height, circles, scale};
-      const SVGImageSource = getSVGImageSourceFromComponent(<MetaballsSVG {...metaballsProps} />);
+      const SVGImageSource = getSVGImageSourceFromComponent(<Metaballs {...metaballsProps} />);
 
       setCircles(circles);
       setSVGImageSource(SVGImageSource);
@@ -184,7 +184,7 @@ const enhance = compose(
   }),
 );
 
-const MetaballPicture = (props) => {
+const MetaballTracer = (props) => {
   const {
     canvasRef,
     handleFacetChange,
@@ -209,4 +209,4 @@ const MetaballPicture = (props) => {
   );
 };
 
-export default enhance(MetaballPicture);
+export default enhance(MetaballTracer);
