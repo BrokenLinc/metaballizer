@@ -10,8 +10,11 @@ const Uploader = compose(
   withHandlers({
     handleFileInputChange: ({ onFileChange }) => (event) => {
       const files = event.target.files;
-      const fileURL = window.URL.createObjectURL(files[0]);
-      onFileChange && onFileChange(fileURL);
+
+      if(files && files.length > 0) {
+        const fileURL = window.URL.createObjectURL(files[0]);
+        onFileChange && onFileChange(fileURL);
+      }
     },
   }),
 )((props) => (
