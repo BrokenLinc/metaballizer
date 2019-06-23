@@ -4,15 +4,15 @@ import {compose, withState, withHandlers} from 'recompose';
 // import abeImage from './abe.jpg';
 import jimmyImage from '../assets/jimmy.jpg';
 
-import Uploader from './Uploader';
+import ImageDropZone from './ImageDropZone';
 import MetaballTracer from './MetaballTracer';
 
 const enhance = compose(
   withState('imageSrc', 'setImageSrc', jimmyImage),
-  withState('brightnessThreshold', 'setBrightnessThreshold', 100),
   withState('dotCount', 'setDotCount', 100),
-  withState('blueThreshold', 'setBlueThreshold', 0.5),
-  withState('redThreshold', 'setRedThreshold', 0.5),
+  withState('brightnessThreshold', 'setBrightnessThreshold', 91),
+  withState('blueThreshold', 'setBlueThreshold', 0.53),
+  withState('redThreshold', 'setRedThreshold', 0.61),
   withState('isSourceLayerVisible', 'setIsSourceLayerVisible', false),
   withState('isScaledLayerVisible', 'setIsScaledLayerVisible', false),
   withState('isOutputLayerVisible', 'setIsOutputLayerVisible', true),
@@ -75,7 +75,7 @@ const MetaballEditor = (props) => {
       />
       <div className="image-effects-menu">
         <div className="form-group">
-          <Uploader onFileChange={setImageSrc}/>
+          <ImageDropZone onFileChange={setImageSrc}/>
         </div>
         <div className="form-group">
           <label>Metaball Resolution ({dotCount})</label>

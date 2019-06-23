@@ -93,3 +93,20 @@ input[type=checkbox] {
   background: #000000cc;
   border-left: 1px solid currentColor;
 }
+
+.drop-zone {
+  border: 1px dashed currentColor;
+  text-align: center;
+  font-size: 12px;
+  line-height: 16px;
+  padding: 16px;
+  background-color: #111;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+
+  &:hover {
+    background-color: #222;
+    color: #bbb;
+  }
+}
