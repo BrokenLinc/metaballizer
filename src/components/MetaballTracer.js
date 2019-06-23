@@ -14,6 +14,7 @@ import cn from 'classnames';
 import COLOR from '../constants/color';
 import getPixelRGB from '../utilities/getPixelRGB';
 import getSVGImageSourceFromComponent from '../utilities/getSVGImageSourceFromComponent';
+import random from '../utilities/random';
 import Metaballs from './svg/Metaballs';
 
 // config
@@ -127,10 +128,10 @@ const enhance = compose(
           const circle = grid[x][y];
           const circleRight = grid[x + 1][y];
           const circleDown = grid[x][y + 1];
-          if (circle.fill === circleRight.fill && Math.random() < connectorFrequency) {
+          if (circle.fill === circleRight.fill && random((x + 234) * (y + 345)) < connectorFrequency) {
             circle.hasRightConnector = true;
           }
-          if (circle.fill === circleDown.fill && Math.random() < connectorFrequency) {
+          if (circle.fill === circleDown.fill && random((x + 456) * (y + 567)) < connectorFrequency) {
             circle.hasDownConnector = true;
           }
         }
