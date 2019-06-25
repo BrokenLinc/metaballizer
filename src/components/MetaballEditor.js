@@ -1,5 +1,5 @@
 import React from 'react';
-import {compose, withState, withHandlers} from 'recompose';
+import {compose, withState, withHandlers, withPropsOnChange} from 'recompose';
 
 // import abeImage from './abe.jpg';
 import jimmyImage from '../assets/jimmy.jpg';
@@ -11,11 +11,26 @@ const enhance = compose(
   withState('imageSrc', 'setImageSrc', jimmyImage),
   withState('dotCount', 'setDotCount', 100),
   withState('brightnessThreshold', 'setBrightnessThreshold', 91),
-  withState('blueThreshold', 'setBlueThreshold', 0.53),
-  withState('redThreshold', 'setRedThreshold', 0.61),
+  withState('lowThreshold', 'setBlueThreshold', 0.53),
+  withState('highThreshold', 'setRedThreshold', 0.61),
   withState('isSourceLayerVisible', 'setIsSourceLayerVisible', false),
   withState('isScaledLayerVisible', 'setIsScaledLayerVisible', false),
   withState('isOutputLayerVisible', 'setIsOutputLayerVisible', true),
+  withState('mode', 'setMode', 'color'),
+  withPropsOnChange(['mode'], ({ mode }) => {
+    if (mode === 'color') {
+      return {
+        highThresholdLabel: 'Red',
+        lowThresholdLabel: 'Blue',
+      };
+    }
+    if (mode === 'monochrome') {
+      return {
+        highThresholdLabel: 'White',
+        lowThresholdLabel: 'Dark Gray',
+      };
+    }
+  }),
   withHandlers({
     handleBrightnessThresholdChange: ({setBrightnessThreshold}) => (event) => {
       setBrightnessThreshold(parseFloat(event.target.value));
@@ -38,6 +53,9 @@ const enhance = compose(
     handleIsOutputLayerVisible: ({setIsOutputLayerVisible}) => (event) => {
       setIsOutputLayerVisible(event.target.checked);
     },
+    handleModeChange: ({setMode}) => (event) => {
+      setMode(event.target.value);
+    },
   }),
 );
 
@@ -45,8 +63,10 @@ const MetaballEditor = (props) => {
   const {
     brightnessThreshold,
     dotCount,
-    blueThreshold,
-    redThreshold,
+    lowThreshold,
+    lowThresholdLabel,
+    highThreshold,
+    highThresholdLabel,
     handleDotCountChange,
     handleBrightnessThresholdChange,
     handleBlueThresholdChange,
@@ -54,10 +74,12 @@ const MetaballEditor = (props) => {
     handleIsSourceLayerVisible,
     handleIsScaledLayerVisible,
     handleIsOutputLayerVisible,
+    handleModeChange,
     isSourceLayerVisible,
     isScaledLayerVisible,
     isOutputLayerVisible,
     imageSrc,
+    mode,
     setImageSrc,
   } = props;
 
@@ -67,15 +89,39 @@ const MetaballEditor = (props) => {
         imageSrc={imageSrc}
         brightnessThreshold={brightnessThreshold}
         dotCount={dotCount}
-        blueThreshold={blueThreshold}
-        redThreshold={redThreshold}
+        lowThreshold={lowThreshold}
+        highThreshold={highThreshold}
         isSourceLayerVisible={isSourceLayerVisible}
         isScaledLayerVisible={isScaledLayerVisible}
         isOutputLayerVisible={isOutputLayerVisible}
+        mode={mode}
       />
       <div className="image-effects-menu">
         <div className="form-group">
           <ImageDropZone onFileChange={setImageSrc}/>
+        </div>
+        <div className="form-group">
+          <label>Mode</label>
+          <label>
+            <input
+              type="radio"
+              name="mode"
+              value="color"
+              checked={mode === 'color'}
+              onChange={handleModeChange}
+            />
+            Color
+          </label>
+          <label>
+            <input
+              type="radio"
+              name="mode"
+              value="monochrome"
+              checked={mode === 'monochrome'}
+              onChange={handleModeChange}
+            />
+            Monochrome
+          </label>
         </div>
         <div className="form-group">
           <label>Metaball Resolution ({dotCount})</label>
@@ -101,24 +147,24 @@ const MetaballEditor = (props) => {
           />
         </div>
         <div className="form-group">
-          <label>Blue ({blueThreshold})</label>
+          <label>{lowThresholdLabel} ({lowThreshold})</label>
           <input
             type="range"
             min={0}
             max={1}
             step={0.01}
-            value={blueThreshold}
+            value={lowThreshold}
             onChange={handleBlueThresholdChange}
           />
         </div>
         <div className="form-group">
-          <label>Red ({redThreshold})</label>
+          <label>{highThresholdLabel} ({highThreshold})</label>
           <input
             type="range"
             min={0}
             max={1}
             step={0.01}
-            value={redThreshold}
+            value={highThreshold}
             onChange={handleRedThresholdChange}
             className="rtl"
           />

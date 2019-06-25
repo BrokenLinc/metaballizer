@@ -8,7 +8,7 @@ import {
   withState,
   withStateHandlers
 } from 'recompose';
-import {each} from 'lodash';
+import {assign, each} from 'lodash';
 import cn from 'classnames';
 
 import COLOR from '../constants/color';
@@ -44,15 +44,100 @@ import Metaballs from './svg/Metaballs';
 //   return pathData;
 // };
 
+class ColorAnalyzer {
+  colorScaleMin = 0;
+  colorScaleMax = 0;
+
+  constructor({lowThreshold, brightnessThreshold, highThreshold}) {
+    this.lowThreshold = lowThreshold;
+    this.brightnessThreshold = brightnessThreshold;
+    this.highThreshold = highThreshold;
+  }
+
+  getPixelAnalysis(pixel) {
+    const {red, green, blue} = pixel;
+    const brightness = (red + green + blue) / 3;
+
+    // create dots for pixels that are bright enough
+    if (brightness > this.brightnessThreshold) {
+
+      // find the colorScale, or how much more red or blue the pixel is
+      const colorScale = red - blue;
+      this.colorScaleMin = Math.min(colorScale, this.colorScaleMin);
+      this.colorScaleMax = Math.max(colorScale, this.colorScaleMax);
+
+      return {colorScale};
+    }
+
+    return null;
+  }
+
+  paintShape(shape) {
+    const relativeColorScale = (shape.colorScale - this.colorScaleMin) / (this.colorScaleMax - this.colorScaleMin);
+
+    // TODO: store relativeColorScale and move the fill logic out to the render method
+    if (relativeColorScale < this.lowThreshold) {
+      shape.fill = COLOR.BLUE;
+    } else if (relativeColorScale > this.highThreshold) {
+      shape.fill = COLOR.RED;
+    } else {
+      shape.fill = COLOR.PURPLE;
+    }
+  }
+}
+
+class MonochromeAnalyzer {
+  colorScaleMin = 0;
+  colorScaleMax = 0;
+
+  constructor({lowThreshold, brightnessThreshold, highThreshold}) {
+    this.lowThreshold = lowThreshold;
+    this.brightnessThreshold = brightnessThreshold;
+    this.highThreshold = highThreshold;
+  }
+
+  getPixelAnalysis(pixel) {
+    const {red, green, blue} = pixel;
+    const brightness = (red + green + blue) / 3;
+
+    // create dots for pixels that are bright enough
+    if (brightness > this.brightnessThreshold) {
+
+      // find the colorScale, or how much brightness there is past the threshold
+      const colorScale = brightness;
+      this.colorScaleMin = Math.min(colorScale, this.colorScaleMin);
+      this.colorScaleMax = Math.max(colorScale, this.colorScaleMax);
+
+      return {colorScale};
+    }
+
+    return null;
+  }
+
+  paintShape(shape) {
+    const relativeColorScale = (shape.colorScale - this.colorScaleMin) / (this.colorScaleMax - this.colorScaleMin);
+
+    // TODO: store relativeColorScale and move the fill logic out to the render method
+    if (relativeColorScale < this.lowThreshold) {
+      shape.fill = COLOR.GRAY;
+    } else if (relativeColorScale > this.highThreshold) {
+      shape.fill = COLOR.WHITE;
+    } else {
+      shape.fill = COLOR.LIGHT_GRAY;
+    }
+  }
+}
+
 const enhance = compose(
   defaultProps({
-    blueThreshold: 0.53,
+    lowThreshold: 0.53,
     brightnessThreshold: 100,
     canvasRef: React.createRef(),
     connectorFrequency: 0.2,
     dotCount: 100,
     imageRef: React.createRef(),
-    redThreshold: 0.61,
+    highThreshold: 0.61,
+    mode: 'color',
   }),
   withState('canvasContext', 'setCanvasContext'),
   withState('circles', 'setCircles'),
@@ -64,12 +149,13 @@ const enhance = compose(
     drawShapes: (props) => (nextState) => {
       // merge nextState with props, to get the most up-to-date info
       const {
-        blueThreshold,
+        lowThreshold,
         brightnessThreshold,
         canvasContext,
         connectorFrequency,
         height,
-        redThreshold,
+        highThreshold,
+        mode,
         scale,
         scaledHeight,
         scaledWidth,
@@ -81,8 +167,10 @@ const enhance = compose(
       const circles = [];
       const grid = [];
 
-      let colorScaleMin = 0;
-      let colorScaleMax = 0;
+
+      const analyzer = (mode === 'monochrome')
+        ? new MonochromeAnalyzer({lowThreshold, brightnessThreshold, highThreshold})
+        : new ColorAnalyzer({lowThreshold, brightnessThreshold, highThreshold});
 
       // sample pixels from canvas
       // add 0.6 offset to center dots on pixel grid
@@ -90,19 +178,15 @@ const enhance = compose(
         grid[x] = [];
         for (let y = 0; y <= scaledHeight; y += 1) {
           const circle = {cx: x + 0.5, cy: y + 0.5};
-          const {red, green, blue} = getPixelRGB(canvasContext, {x, y});
+          const pixel = getPixelRGB(canvasContext, {x, y});
+          const analysis = analyzer.getPixelAnalysis(pixel);
 
-          // create dots for pixels that are bright enough
-          if ((red + green + blue) / 3 > brightnessThreshold) {
-            // find the colorScale, or how much more red or blue the pixel is
-            const colorScale = red - blue;
-            colorScaleMin = Math.min(colorScale, colorScaleMin);
-            colorScaleMax = Math.max(colorScale, colorScaleMax);
-            circle.colorScale = colorScale;
-
+          if (analysis) {
+            assign(circle, analysis);
             // add the circle to the flat list
             circles.push(circle);
           }
+
           // add the circle to the grid lookup
           grid[x].push(circle);
         }
@@ -110,16 +194,7 @@ const enhance = compose(
 
       // map colorScale to fill by comparing it to the min/max values and thresholds
       each(circles, (circle) => {
-        const relativeColorScale = (circle.colorScale - colorScaleMin) / (colorScaleMax - colorScaleMin);
-
-        // TODO: store relativeColorScale and move the fill logic out to the render method
-        if (relativeColorScale < blueThreshold) {
-          circle.fill = COLOR.BLUE;
-        } else if (relativeColorScale > redThreshold) {
-          circle.fill = COLOR.RED;
-        } else {
-          circle.fill = COLOR.PURPLE;
-        }
+        analyzer.paintShape(circle);
       });
 
       // run through grid and create connections between same-color dots
@@ -170,7 +245,7 @@ const enhance = compose(
   }),
   // update artwork when input props change
   withPropsOnChange(
-    ['blueThreshold', 'brightnessThreshold', 'dotCount', 'redThreshold'],
+    ['lowThreshold', 'brightnessThreshold', 'dotCount', 'highThreshold', 'mode'],
     ({handleFacetChange}) => {
       handleFacetChange();
     },
@@ -199,12 +274,12 @@ const MetaballTracer = (props) => {
 
   return (
     <div className="metaball-picture">
-      <img ref={imageRef} src={imageSrc} alt="source" onLoad={handleFacetChange} className="metaball-picture-loader" />
+      <img ref={imageRef} src={imageSrc} alt="source" onLoad={handleFacetChange} className="metaball-picture-loader"/>
 
       <div className="metaball-picture-layers">
-        <img src={imageSrc} alt="source" className={cn({ hidden: !isSourceLayerVisible })} />
-        <canvas ref={canvasRef} className={cn([{ hidden: !isScaledLayerVisible }, 'pixelated'])} />
-        <img src={SVGImageSource} alt="output" className={cn({ hidden: !isOutputLayerVisible })} />
+        <img src={imageSrc} alt="source" className={cn({hidden: !isSourceLayerVisible})}/>
+        <canvas ref={canvasRef} className={cn([{hidden: !isScaledLayerVisible}, 'pixelated'])}/>
+        <img src={SVGImageSource} alt="output" className={cn({hidden: !isOutputLayerVisible})}/>
       </div>
     </div>
   );
