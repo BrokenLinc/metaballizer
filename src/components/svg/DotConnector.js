@@ -19,9 +19,7 @@ const enhance = withPropsOnChange(['direction'], ({direction}) => {
 const DotConnector = ({cx, cy, direction, offsetX, offsetY, scale, ...restProps}) => (
   <path
     d="M0,0c27.61,27.61 72.39,27.61 100,0c-27.61,27.61 -27.61,72.39 0,100c-27.61,-27.61 -72.39,-27.61 -100,0c27.61,-27.61 27.61,-72.39 0,-100z"
-    style={{
-      transform: `translate(${(cx + offsetX) / scale}px, ${(cy + offsetY) / scale}px) scale(${0.5 / 100 / scale})`,
-    }}
+    transform={`translate(${(cx + offsetX) / scale}, ${(cy + offsetY) / scale}) scale(${0.5 / 100 / scale})`}
     {...restProps}
   />
 );
