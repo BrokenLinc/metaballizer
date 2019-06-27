@@ -75,13 +75,13 @@ class ColorAnalyzer {
   paintShape(shape) {
     const relativeColorScale = (shape.colorScale - this.colorScaleMin) / (this.colorScaleMax - this.colorScaleMin);
 
-    // TODO: store relativeColorScale and move the fill logic out to the render method
+    // TODO: store relativeColorScale and move the color logic out to the render method
     if (relativeColorScale < this.lowThreshold) {
-      shape.fill = COLOR.BLUE;
+      shape.color = COLOR.BLUE;
     } else if (relativeColorScale > this.highThreshold) {
-      shape.fill = COLOR.RED;
+      shape.color = COLOR.RED;
     } else {
-      shape.fill = COLOR.PURPLE;
+      shape.color = COLOR.PURPLE;
     }
   }
 }
@@ -117,13 +117,13 @@ class MonochromeAnalyzer {
   paintShape(shape) {
     const relativeColorScale = (shape.colorScale - this.colorScaleMin) / (this.colorScaleMax - this.colorScaleMin);
 
-    // TODO: store relativeColorScale and move the fill logic out to the render method
+    // TODO: store relativeColorScale and move the color logic out to the render method
     if (relativeColorScale < this.lowThreshold) {
-      shape.fill = COLOR.GRAY;
+      shape.color = COLOR.GRAY;
     } else if (relativeColorScale > this.highThreshold) {
-      shape.fill = COLOR.WHITE;
+      shape.color = COLOR.WHITE;
     } else {
-      shape.fill = COLOR.LIGHT_GRAY;
+      shape.color = COLOR.LIGHT_GRAY;
     }
   }
 }
@@ -140,7 +140,7 @@ const enhance = compose(
     mode: 'color',
   }),
   withState('canvasContext', 'setCanvasContext'),
-  withState('circles', 'setCircles'),
+  withState('circleGroups', 'setCircleGroups'),
   withState('SVGImageSource', 'setSVGImageSource'),
   withStateHandlers({}, {
     setState: () => (newState) => (newState),
@@ -159,7 +159,7 @@ const enhance = compose(
         scale,
         scaledHeight,
         scaledWidth,
-        setCircles,
+        setCircleGroups,
         setSVGImageSource,
         width,
       } = {...props, ...nextState};
@@ -192,9 +192,15 @@ const enhance = compose(
         }
       }
 
-      // map colorScale to fill by comparing it to the min/max values and thresholds
+      // map colorScale to color by comparing it to the min/max values and thresholds
+      const circleGroups = {};
       each(circles, (circle) => {
         analyzer.paintShape(circle);
+        const circleGroup = circleGroups[circle.color.key] = circleGroups[circle.color.key] || {
+          paint: circle.color,
+          circles: [],
+        };
+        circleGroup.circles.push(circle);
       });
 
       // run through grid and create connections between same-color dots
@@ -203,19 +209,19 @@ const enhance = compose(
           const circle = grid[x][y];
           const circleRight = grid[x + 1][y];
           const circleDown = grid[x][y + 1];
-          if (circle.fill === circleRight.fill && random((x + 234) * (y + 345)) < connectorFrequency) {
+          if (circle.color === circleRight.color && random((x + 234) * (y + 345)) < connectorFrequency) {
             circle.hasRightConnector = true;
           }
-          if (circle.fill === circleDown.fill && random((x + 456) * (y + 567)) < connectorFrequency) {
+          if (circle.color === circleDown.color && random((x + 456) * (y + 567)) < connectorFrequency) {
             circle.hasDownConnector = true;
           }
         }
       }
 
-      const metaballsProps = {width, height, circles, scale};
+      const metaballsProps = {width, height, circleGroups, scale};
       const SVGImageSource = getSVGImageSourceFromComponent(<Metaballs {...metaballsProps} />);
 
-      setCircles(circles);
+      setCircleGroups(circleGroups);
       setSVGImageSource(SVGImageSource);
     },
   }),

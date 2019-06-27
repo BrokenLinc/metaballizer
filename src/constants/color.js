@@ -1,10 +1,32 @@
+import {each} from 'lodash';
+
 const COLOR = {
-  BLUE: '#007AFF',
-  PURPLE: '#D000D6',
-  RED: '#F07',
-  WHITE: '#FFF',
-  LIGHT_GRAY: '#FFFFFF99',
-  GRAY: '#FFFFFF66',
+  BLUE: {
+    hex: '#007AFF',
+    opacity: 1,
+  },
+  PURPLE: {
+    hex: '#D000D6',
+    opacity: 1,
+  },
+  RED: {
+    hex: '#F07',
+    opacity: 1,
+  },
+  WHITE: {
+    hex: '#fff',
+    opacity: 1,
+  },
+  LIGHT_GRAY: {
+    hex: '#fff',
+    opacity: 0.5,
+  },
+  GRAY: {
+    hex: '#fff',
+    opacity: 0.25,
+  },
 };
+
+each(COLOR, (o, key) => o.key = key);
 
 export default COLOR;
