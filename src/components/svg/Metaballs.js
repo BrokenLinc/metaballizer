@@ -4,29 +4,33 @@ import {map} from 'lodash';
 import Dot from './Dot';
 import DotConnector from './DotConnector';
 
-const Metaballs = ({width, height, circles, scale}) => (
+const Metaballs = ({width, height, circleGroups, scale}) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width={`${width}px`}
     height={`${height}px`}
   >
-    {map(circles, ({cx, cy, fill, hasDownConnector, hasRightConnector}, i) => {
-      const shapeProps = {cx, cy, fill, scale};
+    {map(circleGroups, ({circles, paint}, j) => (
+      <g key={j} opacity={paint.opacity}>
+        {map(circles, ({cx, cy, fill, hasDownConnector, hasRightConnector}, i) => {
+          const shapeProps = {cx, cy, fill: fill.hex, scale};
 
-      return (
-        <React.Fragment key={i}>
-          <Dot {...shapeProps} />
+          return (
+            <React.Fragment key={i}>
+              <Dot {...shapeProps} />
 
-          {hasDownConnector && (
-            <DotConnector {...shapeProps} direction="down"/>
-          )}
+              {hasDownConnector && (
+                <DotConnector {...shapeProps} direction="down"/>
+              )}
 
-          {hasRightConnector && (
-            <DotConnector {...shapeProps} direction="right"/>
-          )}
-        </React.Fragment>
-      )
-    })}
+              {hasRightConnector && (
+                <DotConnector {...shapeProps} direction="right"/>
+              )}
+            </React.Fragment>
+          )
+        })}
+      </g>
+    ))}
   </svg>
 );
 

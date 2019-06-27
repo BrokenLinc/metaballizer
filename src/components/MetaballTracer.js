@@ -140,7 +140,7 @@ const enhance = compose(
     mode: 'color',
   }),
   withState('canvasContext', 'setCanvasContext'),
-  withState('circles', 'setCircles'),
+  withState('circleGroups', 'setCircleGroups'),
   withState('SVGImageSource', 'setSVGImageSource'),
   withStateHandlers({}, {
     setState: () => (newState) => (newState),
@@ -159,7 +159,7 @@ const enhance = compose(
         scale,
         scaledHeight,
         scaledWidth,
-        setCircles,
+        setCircleGroups,
         setSVGImageSource,
         width,
       } = {...props, ...nextState};
@@ -193,8 +193,14 @@ const enhance = compose(
       }
 
       // map colorScale to fill by comparing it to the min/max values and thresholds
+      const circleGroups = {};
       each(circles, (circle) => {
         analyzer.paintShape(circle);
+        const circleGroup = circleGroups[circle.fill.key] = circleGroups[circle.fill.key] || {
+          paint: circle.fill,
+          circles: [],
+        };
+        circleGroup.circles.push(circle);
       });
 
       // run through grid and create connections between same-color dots
@@ -212,10 +218,10 @@ const enhance = compose(
         }
       }
 
-      const metaballsProps = {width, height, circles, scale};
+      const metaballsProps = {width, height, circleGroups, scale};
       const SVGImageSource = getSVGImageSourceFromComponent(<Metaballs {...metaballsProps} />);
 
-      setCircles(circles);
+      setCircleGroups(circleGroups);
       setSVGImageSource(SVGImageSource);
     },
   }),
