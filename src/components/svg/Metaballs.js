@@ -12,8 +12,8 @@ const Metaballs = ({width, height, circleGroups, scale}) => (
   >
     {map(circleGroups, ({circles, paint}, j) => (
       <g key={j} opacity={paint.opacity}>
-        {map(circles, ({cx, cy, fill, hasDownConnector, hasRightConnector}, i) => {
-          const shapeProps = {cx, cy, fill: fill.hex, scale};
+        {map(circles, ({cx, cy, color, hasDownConnector, hasRightConnector}, i) => {
+          const shapeProps = {cx, cy, fill: color.hex, scale};
 
           return (
             <React.Fragment key={i}>
