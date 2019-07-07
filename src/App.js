@@ -1,9 +1,9 @@
 import React from 'react';
 
-import MetaballEditor from './components/MetaballEditor';
+import MetablobEditor from './components/MetablobEditor';
 
 const App = () => (
-  <MetaballEditor />
+  <MetablobEditor />
 );
 
 export default App;

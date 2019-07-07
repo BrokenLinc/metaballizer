@@ -1,10 +1,10 @@
 import {renderToString} from 'react-dom/server';
 
+import getSVGImageSourceFromString from './getSVGImageSourceFromString';
+
 const getSVGImageSourceFromComponent = (component) => {
   let metaballsSVGString = renderToString(component);
-  // console.log(metaballsSVGString);
-  metaballsSVGString = encodeURIComponent(metaballsSVGString);
-  return `data:image/svg+xml;charset=utf-8,${metaballsSVGString}`;
+  return getSVGImageSourceFromString(metaballsSVGString);
 };
 
 export default getSVGImageSourceFromComponent;
