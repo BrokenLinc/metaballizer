@@ -1052,6 +1052,13 @@
   dependencies:
     "@hapi/hoek" "6.x.x"
 
+"@hocs/safe-timers@^0.4.0":
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/@hocs/safe-timers/-/safe-timers-0.4.0.tgz#e3e7ff8988f8b044b56d18647f71a508d62805f4"
+  integrity sha512-yN+NqmvvnaBT8dby2SbthZKggNZWWQvlqe1dvrqP3/Vz58LSgBf1wx0vNg+HkXY7ZsOkKfDm2QFSPStagmrw6w==
+  dependencies:
+    react-display-name "^0.2.4"
+
 "@jest/console@^24.7.1":
   version "24.7.1"
   resolved "https://registry.yarnpkg.com/@jest/console/-/console-24.7.1.tgz#32a9e42535a97aedfe037e725bd67e954b459545"
@@ -7335,9 +7342,9 @@ obuf@^1.0.0, obuf@^1.1.2:
   integrity sha512-PX1wu0AmAdPqOL1mWhqmlOd8kOIZQwGZw6rh7uby9fTc5lhaOWFLX3I6R1hrF9k3zUY40e6igsLGkDXK92LJNg==
 
 omggif@^1.0.9:
-  version "1.0.9"
-  resolved "https://registry.yarnpkg.com/omggif/-/omggif-1.0.9.tgz#dcb7024dacd50c52b4d303f04802c91c057c765f"
-  integrity sha1-3LcCTazVDFK00wPwSALJHAV8dl8=
+  version "1.0.10"
+  resolved "https://registry.yarnpkg.com/omggif/-/omggif-1.0.10.tgz#ddaaf90d4a42f532e9e7cb3a95ecdd47f17c7b19"
+  integrity sha512-LMJTtvgc/nugXj0Vcrrs68Mn2D1r0zf630VNtqtpI1FEO7e+O9FP4gqs9AcnBaSEeoHIPm28u6qgPR0oyEpGSw==
 
 on-finished@~2.3.0:
   version "2.3.0"
@@ -7800,6 +7807,11 @@ pnp-webpack-plugin@1.2.1:
   integrity sha512-W6GctK7K2qQiVR+gYSv/Gyt6jwwIH4vwdviFqx+Y2jAtVf5eZyYIDf5Ac2NCDMBiX5yWscBLZElPTsyA1UtVVA==
   dependencies:
     ts-pnp "^1.0.0"
+
+point-in-svg-polygon@^1.0.22:
+  version "1.0.22"
+  resolved "https://registry.yarnpkg.com/point-in-svg-polygon/-/point-in-svg-polygon-1.0.22.tgz#47c76430ba51db77371728faded42fee31d434bc"
+  integrity sha512-kqfkdf9XPSvIvWr4j94kRCpgm3AGVNAQkyS1VmP4EPlA51lrc9KV+GPqx8peeMILNaJ63f+FpPiYccnLkakDXw==
 
 portfinder@^1.0.9:
   version "1.0.20"
@@ -8753,6 +8765,11 @@ react-dev-utils@^9.0.1:
     sockjs-client "1.3.0"
     strip-ansi "5.2.0"
     text-table "0.2.0"
+
+react-display-name@^0.2.4:
+  version "0.2.4"
+  resolved "https://registry.yarnpkg.com/react-display-name/-/react-display-name-0.2.4.tgz#e2a670b81d79a2204335510c01246f4c92ff12cf"
+  integrity sha512-zvU6iouW+SWwHTyThwxGICjJYCMZFk/6r/+jmOdC7ntQoPlS/Pqb81MkxaMf2bHTSq9TN3K3zX2/ayMW/jCtyA==
 
 react-dom@^16.8.6:
   version "16.8.6"

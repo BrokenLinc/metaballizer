@@ -10,10 +10,14 @@ import MetablobTracer from './MetablobTracer';
 const enhance = compose(
   withState('imageSrc', 'setImageSrc', abeImage),
   withState('isSourceLayerVisible', 'setIsSourceLayerVisible', false),
+  withState('isAnalysisLayerVisible', 'setIsAnalysisLayerVisible', true),
   withState('isOutputLayerVisible', 'setIsOutputLayerVisible', true),
   withHandlers({
     handleIsSourceLayerVisible: ({setIsSourceLayerVisible}) => (event) => {
       setIsSourceLayerVisible(event.target.checked);
+    },
+    handleIsAnalysisLayerVisible: ({setIsAnalysisLayerVisible}) => (event) => {
+      setIsAnalysisLayerVisible(event.target.checked);
     },
     handleIsOutputLayerVisible: ({setIsOutputLayerVisible}) => (event) => {
       setIsOutputLayerVisible(event.target.checked);
@@ -24,8 +28,10 @@ const enhance = compose(
 const MetablobEditor = (props) => {
   const {
     handleIsSourceLayerVisible,
+    handleIsAnalysisLayerVisible,
     handleIsOutputLayerVisible,
     isSourceLayerVisible,
+    isAnalysisLayerVisible,
     isOutputLayerVisible,
     imageSrc,
     setImageSrc,
@@ -36,6 +42,7 @@ const MetablobEditor = (props) => {
       <MetablobTracer
         imageSrc={imageSrc}
         isSourceLayerVisible={isSourceLayerVisible}
+        isAnalysisLayerVisible={isAnalysisLayerVisible}
         isOutputLayerVisible={isOutputLayerVisible}
       />
       <div className="image-effects-menu">
@@ -51,6 +58,14 @@ const MetablobEditor = (props) => {
               onChange={handleIsSourceLayerVisible}
             />
             Source Image
+          </label>
+          <label>
+            <input
+              type="checkbox"
+              checked={isAnalysisLayerVisible}
+              onChange={handleIsAnalysisLayerVisible}
+            />
+            Analysis Image
           </label>
           <label>
             <input
